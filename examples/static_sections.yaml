@@ -1,0 +1,15 @@
+cv:
+  name: John Doe
+  email: john.doe@example.com
+  phone: '+1-234-567-8900'
+  location: San Francisco, CA
+  website: https://github.com/johndoe
+  social_networks:
+  - network: LinkedIn
+    username: johndoe
+  sections:
+    education:
+    - institution: University of California, Berkeley
+      area: Computer Science
+      degree: B.S.
+      end_date: '2020'

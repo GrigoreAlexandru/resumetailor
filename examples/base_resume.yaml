@@ -1,0 +1,110 @@
+cv:
+  sections:
+    summary:
+    - 'Senior Software Engineer with 6+ years of experience in full-stack development,
+      specializing in building scalable web applications and microservices. Expert
+      in Python, JavaScript, and cloud technologies, with proven success in optimizing
+      performance and leading cross-functional teams. Successfully reduced API response
+      times by 40% and improved system reliability.'
+    experience:
+    - company: Tech Company Inc
+      position: Senior Software Engineer
+      start_date: '2021-01'
+      highlights:
+      - Led development of microservices platform serving 5M+ users, implementing
+        RESTful APIs and event-driven architecture using Python and AWS.
+      - Improved system performance by 40% through database optimization, caching
+        strategies, and code refactoring.
+      - Mentored 3 junior engineers and established code review practices that reduced
+        bugs by 60%.
+      - Implemented CI/CD pipelines using GitHub Actions and Docker, reducing deployment
+        time from hours to minutes.
+    - company: Startup Solutions
+      position: Full Stack Developer
+      start_date: '2018-06'
+      end_date: '2021-01'
+      highlights:
+      - Built and maintained React-based SPA handling 100K+ daily active users with
+        Node.js backend.
+      - Designed and implemented RESTful API serving mobile and web clients, processing
+        1M+ requests daily.
+      - Reduced page load time by 50% through code splitting, lazy loading, and
+        CDN integration.
+      - Collaborated with product team to deliver features on tight deadlines while
+        maintaining high code quality.
+    skills:
+    - label: Languages
+      details: 'Python, JavaScript, TypeScript, Go, SQL, HTML, CSS'
+    - label: Frameworks & Libraries
+      details: 'React, Node.js, Django, FastAPI, Express, Vue.js'
+    - label: Architecture & Concepts
+      details: 'Microservices, REST APIs, Event-Driven Architecture, Domain Driven
+        Design, Clean Architecture, SOLID, OOP, Agile/Scrum'
+    - label: Data & Cloud
+      details: 'PostgreSQL, MongoDB, Redis, Elasticsearch, AWS, Docker, Kubernetes,
+        Git, CI/CD, Terraform'
+design:
+  theme: engineeringresumes
+  page:
+    size: us-letter
+    top_margin: 1.5cm
+    bottom_margin: 1.5cm
+    left_margin: 1.5cm
+    right_margin: 1.5cm
+    show_page_numbering: false
+    show_last_updated_date: false
+  colors:
+    text: rgb(0, 0, 0)
+    name: rgb(0, 79, 144)
+    connections: rgb(0, 79, 144)
+    section_titles: rgb(0, 79, 144)
+    links: rgb(0, 79, 144)
+  text:
+    font_family: Source Sans 3
+    font_size: 12pt
+    leading: 0.55em
+    alignment: justified
+    date_and_location_column_alignment: right
+  links:
+    underline: false
+    use_external_link_icon: false
+  header:
+    name_font_family: Source Sans 3
+    name_font_size: 32pt
+    name_bold: true
+    small_caps_for_name: false
+    vertical_space_between_name_and_connections: 0.5cm
+    vertical_space_between_connections_and_first_section: 0.6cm
+    horizontal_space_between_connections: 0.5cm
+    connections_font_family: Source Sans 3
+    separator_between_connections: '|'
+    use_icons_for_connections: false
+    use_urls_as_placeholders_for_connections: false
+    make_connections_links: true
+    alignment: center
+  section_titles:
+    type: with-full-line
+    font_family: Source Sans 3
+    font_size: 1.3em
+    bold: true
+    small_caps: false
+    line_thickness: 0.5pt
+    vertical_space_above: 0.4cm
+    vertical_space_below: 0.25cm
+  entries:
+    date_and_location_width: 4.2cm
+    left_and_right_margin: 0.15cm
+    horizontal_space_between_columns: 0.1cm
+    vertical_space_between_entries: 1.1em
+    allow_page_break_in_sections: true
+    allow_page_break_in_entries: true
+    short_second_row: false
+    show_time_spans_in: []
+  highlights:
+    bullet: •
+    nested_bullet: '-'
+    top_margin: 0.2cm
+    left_margin: 0.35cm
+    vertical_space_between_highlights: 0.2cm
+    horizontal_space_between_bullet_and_highlight: 0.4em
+    summary_left_margin: 0cm

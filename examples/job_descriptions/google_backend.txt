@@ -1,0 +1,15 @@
+Senior Backend Engineer - Google
+
+Google is looking for a Senior Backend Engineer to join our cloud infrastructure team.
+
+Requirements:
+- 5+ years of experience in backend development
+- Proficiency in Go, Java, or C++
+- Experience with distributed systems and large-scale data processing
+- Strong understanding of algorithms and data structures
+- BS degree in Computer Science or related field
+
+Responsibilities:
+- Design, develop, test, deploy, maintain and improve software.
+- Manage individual project priorities, deadlines and deliverables.
+- Work with a team of engineers to build and launch new features.

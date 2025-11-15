@@ -1,0 +1,49 @@
+The Team
+
+At JobLeads, you’ll join a passionate and diverse Tech Team spread across continents—but united by a strong culture, shared mission, and collaborative spirit. We thrive on meaningful connections, exchanging ideas both professionally and personally. From your first day, you’ll feel like part of the family—like you’ve been here all along (in the best way possible!).
+
+
+Your Role
+
+We're looking for a Senior Full Stack Developer who’s ready to tackle complex challenges and help shape our digital future. Your deep knowledge of PHP and Symfony will be central to evolving our backend systems. Experience with Vue.js and Server-Side Rendering (SSR) is a big plus, and will allow you to make an even bigger impact.
+
+
+What You'll Be Doing
+
+    Build high-performance, dynamic user interfaces using Vue.js and SSR.
+    Collaborate with designers, product managers, QA engineers, and fellow developers to deliver robust, user-friendly features.
+    Conduct code reviews to ensure maintainability, performance, and adherence to best practices.
+    Stay ahead of industry trends and integrate emerging technologies into development workflows.
+
+
+What You'll Need
+
+    5+ years of experience as a Senior Full Stack Developer, with a strong record of successful project delivery.
+    Deep expertise in PHP, with strong knowledge of best practices and architectural patterns.
+    Hands-on experience with Symfony, including successful real-world implementations.
+    In-depth experience with Vue.js and SSR for building seamless, fast web apps.
+    Proficiency with Git and modern deployment workflows.
+    A strategic and analytical mindset with a knack for solving complex problems.
+    Strong communication skills to collaborate effectively across teams and time zones.
+
+
+Nice If You Have
+
+    Familiarity with MySQL and ORM tools, ideally Doctrine.
+    Solid front-end development skills with HTML5, CSS3, and JavaScript.
+
+
+What You Can Expect On Board
+
+    Work remotely from anywhere—enjoy real flexibility and location freedom.
+    Choose your own IT setup—we’ll provide the tools you need to excel.
+    Be part of a tight-knit international team that values collaboration and inclusion.
+    Competitive compensation aligned with your expertise and contribution.
+    Flexible working hours to support your work–life balance.
+    Ongoing professional development, with support for conferences, training, and learning.
+    The chance to work on innovative, impactful projects that shape the future of career coaching.
+    Memorable team experiences, including our annual JobLeads Sailing Week in the Mediterranean.
+    The best of both worlds: startup agility with the stability of an established company.
+
+
+At JobLeads, you're not just a developer—you’re a key contributor in redefining how jobseekers navigate their careers. If you’re passionate about innovation, excited to work with a talented global team, and eager to build tech that makes a real difference, we want to hear from you.

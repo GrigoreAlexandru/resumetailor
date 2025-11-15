@@ -1,0 +1,23 @@
+Senior Backend Engineer - Cloud Infrastructure
+
+We're looking for a Senior Backend Engineer to join our cloud infrastructure team. You'll be responsible for designing and building scalable services that power our platform.
+
+Requirements:
+- 5+ years of backend development experience
+- Expert-level knowledge of Python or Go
+- Experience with Kubernetes and container orchestration
+- Strong understanding of distributed systems and microservices architecture
+- Experience with AWS or GCP
+- Familiarity with Redis, PostgreSQL, and message queues
+
+Nice to have:
+- Experience with Terraform or Infrastructure as Code
+- Knowledge of observability tools (Prometheus, Grafana)
+- Contributions to open-source projects
+
+Responsibilities:
+- Design and implement highly scalable backend services
+- Optimize system performance and reliability
+- Collaborate with frontend and DevOps teams
+- Mentor junior engineers
+- Participate in on-call rotation
