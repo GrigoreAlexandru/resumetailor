@@ -222,6 +222,44 @@ keywords:
 
     return prompt
 
+
+def extract_resume_keywords_prompt(resume_content: str) -> str:
+    """Create prompt to extract all technical terms from resume content.
+
+    Args:
+        resume_content: YAML resume content
+
+    Returns:
+        Formatted prompt
+    """
+    prompt = f"""Resume Content:
+{resume_content}
+
+Task: Extract ALL technical terms, technologies, tools, and frameworks mentioned in this resume that should be emphasized with bold formatting.
+
+Extract:
+- Programming languages (Python, JavaScript, PHP, Go, Java, etc.)
+- Frameworks and libraries (React, Django, Symfony, Vue.js, Node.js, etc.)
+- Databases (PostgreSQL, MySQL, MongoDB, Redis, etc.)
+- Cloud platforms (AWS, GCP, Azure, etc.)
+- DevOps tools (Docker, Kubernetes, Jenkins, GitLab CI, etc.)
+- Methodologies (Agile, Scrum, TDD, CI/CD, etc.)
+- Other technologies (Kafka, Elasticsearch, RabbitMQ, etc.)
+
+Be comprehensive - include every technical term that appears in the resume.
+
+Output Format:
+Return ONLY a YAML list (no explanatory text):
+
+```yaml
+keywords:
+  - Keyword1
+  - Keyword2
+  - Keyword3
+```"""
+
+    return prompt
+
 def extract_jd_details_prompt(job_description: str) -> str:
     """Create prompt to extract company and role from job description."""
     prompt = f"""From the following job description, extract the company name and the job title.

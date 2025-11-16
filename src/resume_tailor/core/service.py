@@ -15,6 +15,7 @@ from ..llm.prompts import (
     create_highlights_tailoring_prompt,
     create_skills_tailoring_prompt,
     extract_keywords_prompt,
+    extract_resume_keywords_prompt,
     extract_jd_details_prompt
 )
 from .template import TemplateManager
@@ -164,10 +165,39 @@ class ResumeService:
 
         if data:
             keywords = data.get('keywords', [])
-            console.print(f"[green]✓[/green] Extracted {len(keywords)} keywords")
+            console.print(f"[green]✓[/green] Extracted {len(keywords)} keywords from job description")
             return keywords
         else:
             logger.warning("Failed to extract keywords after retries")
+            return []
+
+    def extract_resume_keywords(self, tailored_dynamic: Dict[str, Any]) -> List[str]:
+        """Extract all technical terms from tailored resume content.
+
+        Args:
+            tailored_dynamic: Tailored dynamic sections (summary, experience, skills)
+
+        Returns:
+            List of technical keywords found in resume
+        """
+        console.print("[cyan]Extracting technical terms from resume...[/cyan]")
+
+        # Convert tailored content to YAML string for analysis
+        resume_yaml = yaml.dump(tailored_dynamic, default_flow_style=False, sort_keys=False)
+
+        prompt = extract_resume_keywords_prompt(resume_yaml)
+        data = self._llm_call_with_retry(
+            prompt,
+            expected_keys=['keywords'],
+            operation_name="resume keyword extraction"
+        )
+
+        if data:
+            keywords = data.get('keywords', [])
+            console.print(f"[green]✓[/green] Extracted {len(keywords)} technical terms from resume")
+            return keywords
+        else:
+            logger.warning("Failed to extract resume keywords after retries")
             return []
 
     def _tailor_summary(self, job_description: str, current_summary: str) -> str:
@@ -249,7 +279,7 @@ class ResumeService:
             tailored_experience: Tailored experience entries
             original_skills: Original skills categories
             tailored_skills: Tailored skills categories
-            keywords: Extracted keywords for bolding
+            keywords: Combined keywords for bolding (from JD + resume)
         """
         console.print("\n" + "="*80)
         console.print("[bold cyan]📊 KEYWORDS TO BE EMPHASIZED[/bold cyan]", justify="center")
@@ -257,15 +287,16 @@ class ResumeService:
 
         # Keywords
         if keywords:
-            console.print(f"[bold]Extracted {len(keywords)} keywords for automatic bolding:[/bold]\n")
+            console.print(f"[bold]{len(keywords)} technical terms will be automatically bolded:[/bold]\n")
+            console.print("[dim](Combined from job description + resume content)[/dim]\n")
 
-            # Display keywords in a nicely formatted way
+            # Display keywords in columns for better readability
             keywords_display = []
             for i, kw in enumerate(keywords, 1):
                 keywords_display.append(f"  {i}. {kw}")
 
             console.print("\n".join(keywords_display))
-            console.print("\n[dim]These terms will be automatically emphasized throughout your resume.[/dim]")
+            console.print("\n[dim]All matching occurrences of these terms will be emphasized in the PDF.[/dim]")
         else:
             console.print("[yellow]No keywords extracted.[/yellow]")
 
@@ -320,8 +351,21 @@ class ResumeService:
             "experience": tailored_experience,
         }
 
-        # Extract bold keywords
-        bold_keywords = self.extract_keywords(job_description.text)
+        # Extract keywords from both job description and resume
+        jd_keywords = self.extract_keywords(job_description.text)
+        resume_keywords = self.extract_resume_keywords(tailored_dynamic)
+
+        # Combine and deduplicate keywords (case-insensitive)
+        all_keywords = []
+        seen_lower = set()
+        for keyword in jd_keywords + resume_keywords:
+            keyword_lower = keyword.lower()
+            if keyword_lower not in seen_lower:
+                all_keywords.append(keyword)
+                seen_lower.add(keyword_lower)
+
+        bold_keywords = all_keywords
+        console.print(f"[green]✓[/green] Total keywords for emphasis: {len(bold_keywords)}")
 
         # Extract design from base_resume if present
         base_design = base_resume.get('design')
