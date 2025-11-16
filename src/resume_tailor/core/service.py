@@ -171,21 +171,22 @@ class ResumeService:
             logger.warning("Failed to extract keywords after retries")
             return []
 
-    def extract_resume_keywords(self, tailored_dynamic: Dict[str, Any]) -> List[str]:
-        """Extract all technical terms from tailored resume content.
+    def extract_resume_keywords(self, tailored_dynamic: Dict[str, Any], job_description: str) -> List[str]:
+        """Extract job-relevant technical terms from tailored resume content.
 
         Args:
             tailored_dynamic: Tailored dynamic sections (summary, experience, skills)
+            job_description: Job posting text for relevance filtering
 
         Returns:
-            List of technical keywords found in resume
+            List of job-relevant technical keywords found in resume
         """
-        console.print("[cyan]Extracting technical terms from resume...[/cyan]")
+        console.print("[cyan]Extracting job-relevant terms from resume...[/cyan]")
 
         # Convert tailored content to YAML string for analysis
         resume_yaml = yaml.dump(tailored_dynamic, default_flow_style=False, sort_keys=False)
 
-        prompt = extract_resume_keywords_prompt(resume_yaml)
+        prompt = extract_resume_keywords_prompt(resume_yaml, job_description)
         data = self._llm_call_with_retry(
             prompt,
             expected_keys=['keywords'],
@@ -194,7 +195,7 @@ class ResumeService:
 
         if data:
             keywords = data.get('keywords', [])
-            console.print(f"[green]✓[/green] Extracted {len(keywords)} technical terms from resume")
+            console.print(f"[green]✓[/green] Extracted {len(keywords)} relevant terms from resume")
             return keywords
         else:
             logger.warning("Failed to extract resume keywords after retries")
@@ -287,8 +288,8 @@ class ResumeService:
 
         # Keywords
         if keywords:
-            console.print(f"[bold]{len(keywords)} technical terms will be automatically bolded:[/bold]\n")
-            console.print("[dim](Combined from job description + resume content)[/dim]\n")
+            console.print(f"[bold]{len(keywords)} job-relevant terms will be automatically bolded:[/bold]\n")
+            console.print("[dim](Only terms relevant to this specific job description)[/dim]\n")
 
             # Display keywords in columns for better readability
             keywords_display = []
@@ -353,7 +354,7 @@ class ResumeService:
 
         # Extract keywords from both job description and resume
         jd_keywords = self.extract_keywords(job_description.text)
-        resume_keywords = self.extract_resume_keywords(tailored_dynamic)
+        resume_keywords = self.extract_resume_keywords(tailored_dynamic, job_description.text)
 
         # Combine and deduplicate keywords (case-insensitive)
         all_keywords = []
@@ -365,7 +366,7 @@ class ResumeService:
                 seen_lower.add(keyword_lower)
 
         bold_keywords = all_keywords
-        console.print(f"[green]✓[/green] Total keywords for emphasis: {len(bold_keywords)}")
+        console.print(f"[green]✓[/green] Total relevant keywords for emphasis: {len(bold_keywords)}")
 
         # Extract design from base_resume if present
         base_design = base_resume.get('design')

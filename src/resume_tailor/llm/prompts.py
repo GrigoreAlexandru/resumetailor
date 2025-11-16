@@ -223,30 +223,44 @@ keywords:
     return prompt
 
 
-def extract_resume_keywords_prompt(resume_content: str) -> str:
-    """Create prompt to extract all technical terms from resume content.
+def extract_resume_keywords_prompt(resume_content: str, job_description: str) -> str:
+    """Create prompt to extract job-relevant technical terms from resume content.
 
     Args:
         resume_content: YAML resume content
+        job_description: Job posting text
 
     Returns:
         Formatted prompt
     """
-    prompt = f"""Resume Content:
+    prompt = f"""Job Description:
+{job_description}
+
+---
+
+Resume Content:
 {resume_content}
 
-Task: Extract ALL technical terms, technologies, tools, and frameworks mentioned in this resume that should be emphasized with bold formatting.
+---
 
-Extract:
-- Programming languages (Python, JavaScript, PHP, Go, Java, etc.)
-- Frameworks and libraries (React, Django, Symfony, Vue.js, Node.js, etc.)
-- Databases (PostgreSQL, MySQL, MongoDB, Redis, etc.)
-- Cloud platforms (AWS, GCP, Azure, etc.)
-- DevOps tools (Docker, Kubernetes, Jenkins, GitLab CI, etc.)
-- Methodologies (Agile, Scrum, TDD, CI/CD, etc.)
-- Other technologies (Kafka, Elasticsearch, RabbitMQ, etc.)
+Task: Extract ONLY the technical terms from the resume that are RELEVANT to this specific job description.
 
-Be comprehensive - include every technical term that appears in the resume.
+Instructions:
+- Only include terms that appear in BOTH the resume AND are mentioned or implied in the job description
+- Focus on technologies, skills, and tools that align with the job requirements
+- Exclude technologies that aren't relevant to this job (e.g., if JD is for PHP/Symfony, don't include Go/Python unless JD mentions them)
+- Include related/similar technologies (e.g., if JD mentions "databases" and resume has PostgreSQL, include it)
+
+Examples of what to include:
+- JD mentions "PHP" and resume has "PHP" ✓
+- JD mentions "databases" and resume has "PostgreSQL", "MySQL" ✓
+- JD mentions "Docker" and resume has "Docker", "Kubernetes" ✓
+- JD mentions "REST APIs" and resume has "RESTful APIs" ✓
+
+Examples of what to exclude:
+- JD is for PHP role, resume has "Go" but JD doesn't mention Go ✗
+- JD is for backend, resume has "React" but JD doesn't mention frontend ✗
+- JD is for cloud, resume has "on-premise tools" not mentioned in JD ✗
 
 Output Format:
 Return ONLY a YAML list (no explanatory text):
