@@ -1,48 +1,41 @@
 cv:
+  name: "Alice Wonderland"
+  email: "alice.w@example.com"
+  phone: "+1 (555) 123-4567"
+  linkedin: "linkedin.com/in/alicew"
+  github: "github.com/alicew"
   sections:
     summary:
-    - 'Senior Software Engineer with 6+ years of experience in full-stack development,
-      specializing in building scalable web applications and microservices. Expert
-      in Python, JavaScript, and cloud technologies, with proven success in optimizing
-      performance and leading cross-functional teams. Successfully reduced API response
-      times by 40% and improved system reliability.'
+    - 'Results-driven Software Engineer with 5+ years of experience in developing and deploying high-performance, scalable applications. Proficient in cloud-native architectures, DevOps practices, and full-stack development with a strong focus on Python and Go.'
     experience:
-    - company: Tech Company Inc
+    - company: Quantum Innovations
       position: Senior Software Engineer
-      start_date: '2021-01'
+      start_date: '2022-03'
       highlights:
-      - Led development of microservices platform serving 5M+ users, implementing
-        RESTful APIs and event-driven architecture using Python and AWS.
-      - Improved system performance by 40% through database optimization, caching
-        strategies, and code refactoring.
-      - Mentored 3 junior engineers and established code review practices that reduced
-        bugs by 60%.
-      - Implemented CI/CD pipelines using GitHub Actions and Docker, reducing deployment
-        time from hours to minutes.
-    - company: Startup Solutions
-      position: Full Stack Developer
-      start_date: '2018-06'
-      end_date: '2021-01'
+      - Designed and implemented a real-time data processing pipeline using Apache Kafka and Flink, improving data ingestion speed by 60%.
+      - Developed and maintained critical microservices in Go, handling over 10,000 requests per second with 99.9% uptime.
+      - Led migration of legacy systems to a Kubernetes-based cloud infrastructure (GCP), reducing operational costs by 20%.
+      - Mentored junior engineers on best practices for testing, code quality, and distributed system design.
+    - company: ByteWorks Solutions
+      position: Software Engineer
+      start_date: '2019-01'
+      end_date: '2022-02'
       highlights:
-      - Built and maintained React-based SPA handling 100K+ daily active users with
-        Node.js backend.
-      - Designed and implemented RESTful API serving mobile and web clients, processing
-        1M+ requests daily.
-      - Reduced page load time by 50% through code splitting, lazy loading, and
-        CDN integration.
-      - Collaborated with product team to deliver features on tight deadlines while
-        maintaining high code quality.
+      - Built and optimized RESTful APIs for a customer relationship management (CRM) platform using Python/Django, serving 50,000+ daily users.
+      - Collaborated with product and design teams to translate requirements into technical specifications and deliver features on schedule.
+      - Implemented automated testing (unit, integration, E2E) and CI/CD pipelines, reducing deployment risks and increasing release frequency.
+      - Contributed to front-end development using React, enhancing user experience and responsiveness.
     skills:
     - label: Languages
-      details: 'Python, JavaScript, TypeScript, Go, SQL, HTML, CSS'
+      details: 'Python, Go, JavaScript, TypeScript, SQL, Bash'
     - label: Frameworks & Libraries
-      details: 'React, Node.js, Django, FastAPI, Express, Vue.js'
-    - label: Architecture & Concepts
-      details: 'Microservices, REST APIs, Event-Driven Architecture, Domain Driven
-        Design, Clean Architecture, SOLID, OOP, Agile/Scrum'
-    - label: Data & Cloud
-      details: 'PostgreSQL, MongoDB, Redis, Elasticsearch, AWS, Docker, Kubernetes,
-        Git, CI/CD, Terraform'
+      details: 'Django, FastAPI, Gin, React, Node.js, Flask, Pandas'
+    - label: Cloud & DevOps
+      details: 'AWS, GCP, Docker, Kubernetes, Terraform, Jenkins, GitLab CI, Prometheus, Grafana'
+    - label: Databases & Tools
+      details: 'PostgreSQL, MongoDB, Redis, Kafka, Elasticsearch, Git, Jira, Confluence'
+    - label: Concepts
+      details: 'Microservices, Distributed Systems, RESTful APIs, Event-Driven Architecture, Agile, TDD, OOP'
 design:
   theme: engineeringresumes
   page:
@@ -55,12 +48,12 @@ design:
     show_last_updated_date: false
   colors:
     text: rgb(0, 0, 0)
-    name: rgb(0, 79, 144)
-    connections: rgb(0, 79, 144)
+    name: rgb(0, 0, 0)
+    connections: rgb(0, 0, 0)
     section_titles: rgb(0, 79, 144)
     links: rgb(0, 79, 144)
   text:
-    font_family: Source Sans 3
+    font_family: Roboto
     font_size: 12pt
     leading: 0.55em
     alignment: justified
@@ -69,14 +62,14 @@ design:
     underline: false
     use_external_link_icon: false
   header:
-    name_font_family: Source Sans 3
+    name_font_family: Roboto
     name_font_size: 32pt
     name_bold: true
     small_caps_for_name: false
     vertical_space_between_name_and_connections: 0.5cm
     vertical_space_between_connections_and_first_section: 0.6cm
     horizontal_space_between_connections: 0.5cm
-    connections_font_family: Source Sans 3
+    connections_font_family: Roboto
     separator_between_connections: '|'
     use_icons_for_connections: false
     use_urls_as_placeholders_for_connections: false
@@ -84,7 +77,7 @@ design:
     alignment: center
   section_titles:
     type: with-full-line
-    font_family: Source Sans 3
+    font_family: Roboto
     font_size: 1.3em
     bold: true
     small_caps: false

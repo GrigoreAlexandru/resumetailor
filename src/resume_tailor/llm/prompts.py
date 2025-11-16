@@ -58,9 +58,12 @@ Highlights:
 2.  Rewrite the highlights to emphasize achievements relevant to the job description.
 3.  Use strong action verbs and quantify results.
 4.  Reorder the highlights to put the most relevant ones first.
+5.  Use plain text ONLY - do NOT use markdown bold syntax (**text**)
+
+**CRITICAL:** Do NOT use **bold** markdown syntax in your output. The system will automatically bold key terms.
 
 **Output Format:**
-Return ONLY a YAML list of the tailored highlights (no other text):
+Return ONLY a YAML list of the tailored highlights with plain text (no ** markers):
 
 ```yaml
 highlights:
@@ -97,19 +100,21 @@ Current Skills Section:
 **Task:** Reorder the skills sections to prioritize those most relevant to the job description.
 
 **Instructions:**
-1.  **Do not remove any skills or skill categories.**
-2.  Reorder the skill categories to put the most relevant ones first.
-3.  Within each category, reorder the skills to put the most relevant ones first.
+1.  **CRITICAL: Preserve ALL existing skill category labels EXACTLY as they are. Do NOT add, remove, or modify any labels.**
+2.  **Do not remove any skills or skill categories.**
+3.  Reorder the skill categories to put the most relevant ones first.
+4.  Within each category, reorder the skills in the details field to put the most relevant ones first.
+5.  Keep the exact same label names - only change the order of categories and the order of skills within details.
 
 **Output Format:**
 Return ONLY a YAML list of the tailored skills (no other text):
 
 ```yaml
 skills:
-  - label: "Most relevant category"
-    details: "Most relevant skill, ..."
-  - label: "Next relevant category"
-    details: "..."
+  - label: "Exact original label 1"
+    details: "Reordered skills, ..."
+  - label: "Exact original label 2"
+    details: "Reordered skills, ..."
 ```
 """
     return prompt
@@ -137,15 +142,17 @@ Requirements:
 - 2-3 sentences maximum
 - Lead with years of experience and most relevant expertise
 - Mention 2-3 key technologies/skills from the job description
-- Use **bold** for key qualifications
+- Use plain text ONLY - do NOT use markdown bold syntax (**text**)
 - Be concise and impactful
 
+CRITICAL: Do NOT use **bold** markdown syntax in your output. The system will automatically bold key terms.
+
 Output Format:
-Return ONLY the following YAML structure:
+Return ONLY the following YAML structure with plain text (no ** markers):
 
 ```yaml
 summary:
-  - "Your tailored summary text with **bold** emphasis on key points."
+  - "Your tailored summary text in plain text format."
 ```"""
 
     return prompt

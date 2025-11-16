@@ -50,23 +50,96 @@ class ResumeService:
 
         return content.strip()
 
+    @staticmethod
+    def _validate_yaml_structure(data: Any, expected_keys: List[str]) -> bool:
+        """Validate that parsed YAML has expected structure.
+
+        Args:
+            data: Parsed YAML data
+            expected_keys: List of required top-level keys
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not isinstance(data, dict):
+            return False
+
+        for key in expected_keys:
+            if key not in data:
+                return False
+
+        return True
+
+    def _llm_call_with_retry(
+        self,
+        prompt: str,
+        expected_keys: List[str],
+        max_retries: int = 2,
+        operation_name: str = "LLM call"
+    ) -> Optional[Dict[str, Any]]:
+        """Call LLM with validation and retry logic.
+
+        Args:
+            prompt: Prompt to send to LLM
+            expected_keys: Expected top-level YAML keys
+            max_retries: Maximum number of retry attempts
+            operation_name: Name for logging purposes
+
+        Returns:
+            Parsed YAML dict if successful, None otherwise
+        """
+        for attempt in range(max_retries + 1):
+            try:
+                response = self.llm.simple_completion(prompt)
+                cleaned_response = self._clean_llm_output(response)
+                data = yaml.safe_load(cleaned_response)
+
+                # Validate structure
+                if not self._validate_yaml_structure(data, expected_keys):
+                    logger.warning(
+                        f"{operation_name} attempt {attempt + 1}/{max_retries + 1}: "
+                        f"Invalid YAML structure. Expected keys: {expected_keys}, got: {list(data.keys()) if isinstance(data, dict) else type(data)}"
+                    )
+                    if attempt < max_retries:
+                        console.print(f"[yellow]⚠[/yellow] Retrying {operation_name}...")
+                        continue
+                    return None
+
+                return data
+
+            except (yaml.YAMLError, AttributeError) as e:
+                logger.warning(
+                    f"{operation_name} attempt {attempt + 1}/{max_retries + 1}: "
+                    f"Failed to parse YAML: {e}"
+                )
+                logger.debug(f"Raw response: {response if 'response' in locals() else 'N/A'}")
+
+                if attempt < max_retries:
+                    console.print(f"[yellow]⚠[/yellow] Retrying {operation_name}...")
+                    continue
+
+                return None
+
+        return None
+
     def extract_jd_details(self, job_description: str) -> Dict[str, str]:
         """Extract company and role from job description."""
         console.print("[cyan]Extracting job details...[/cyan]")
 
         prompt = extract_jd_details_prompt(job_description)
-        response = self.llm.simple_completion(prompt)
+        data = self._llm_call_with_retry(
+            prompt,
+            expected_keys=['company', 'role'],
+            operation_name="job details extraction"
+        )
 
-        try:
-            cleaned_response = self._clean_llm_output(response)
-            data = yaml.safe_load(cleaned_response)
+        if data:
             company = data.get('company')
             role = data.get('role')
             console.print(f"[green]✓[/green] Company: {company}, Role: {role}")
             return {"company": company, "role": role}
-        except (yaml.YAMLError, AttributeError) as e:
-            logger.warning(f"Failed to parse job details: {e}")
-            logger.debug(f"Raw job details response: {response}")
+        else:
+            logger.warning("Failed to extract job details after retries")
             return {}
 
     def extract_keywords(self, job_description: str) -> List[str]:
@@ -81,31 +154,37 @@ class ResumeService:
         console.print("[cyan]Extracting keywords from job description...[/cyan]")
 
         prompt = extract_keywords_prompt(job_description)
-        response = self.llm.simple_completion(prompt)
+        data = self._llm_call_with_retry(
+            prompt,
+            expected_keys=['keywords'],
+            operation_name="keyword extraction"
+        )
 
-        try:
-            # Clean and parse YAML response
-            cleaned_response = self._clean_llm_output(response)
-            data = yaml.safe_load(cleaned_response)
+        if data:
             keywords = data.get('keywords', [])
             console.print(f"[green]✓[/green] Extracted {len(keywords)} keywords")
             return keywords
-        except (yaml.YAMLError, AttributeError) as e:
-            logger.warning(f"Failed to parse keywords: {e}")
-            logger.debug(f"Raw keyword response: {response}")
+        else:
+            logger.warning("Failed to extract keywords after retries")
             return []
 
     def _tailor_summary(self, job_description: str, current_summary: str) -> str:
         """Tailor the professional summary."""
         console.print("[cyan]Tailoring summary...[/cyan]")
         prompt = create_summary_prompt(job_description, current_summary)
-        response = self.llm.simple_completion(prompt)
-        try:
-            cleaned_response = self._clean_llm_output(response)
-            data = yaml.safe_load(cleaned_response)
-            return data.get('summary', [current_summary])[0]
-        except (yaml.YAMLError, AttributeError) as e:
-            logger.warning(f"Failed to parse tailored summary: {e}")
+        data = self._llm_call_with_retry(
+            prompt,
+            expected_keys=['summary'],
+            operation_name="summary tailoring"
+        )
+
+        if data:
+            summary_list = data.get('summary', [current_summary])
+            if isinstance(summary_list, list) and summary_list:
+                return summary_list[0]
+            return current_summary
+        else:
+            logger.warning("Failed to tailor summary after retries, using original")
             return current_summary
 
     def _tailor_experience(self, job_description: str, current_experience: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -114,30 +193,37 @@ class ResumeService:
         tailored_experience = []
         for entry in current_experience:
             prompt = create_highlights_tailoring_prompt(job_description, entry)
-            response = self.llm.simple_completion(prompt)
-            try:
-                cleaned_response = self._clean_llm_output(response)
-                data = yaml.safe_load(cleaned_response)
+            data = self._llm_call_with_retry(
+                prompt,
+                expected_keys=['highlights'],
+                operation_name=f"highlights tailoring for {entry.get('company')}"
+            )
+
+            if data:
                 new_highlights = data.get('highlights', entry.get('highlights', []))
                 new_entry = entry.copy()
                 new_entry['highlights'] = new_highlights
                 tailored_experience.append(new_entry)
-            except (yaml.YAMLError, AttributeError) as e:
-                logger.warning(f"Failed to parse tailored highlights for {entry.get('company')}: {e}")
+            else:
+                logger.warning(f"Failed to tailor highlights for {entry.get('company')} after retries, using original")
                 tailored_experience.append(entry)
+
         return tailored_experience
 
     def _tailor_skills(self, job_description: str, current_skills: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Tailor the skills section."""
         console.print("[cyan]Tailoring skills...[/cyan]")
         prompt = create_skills_tailoring_prompt(job_description, current_skills)
-        response = self.llm.simple_completion(prompt)
-        try:
-            cleaned_response = self._clean_llm_output(response)
-            data = yaml.safe_load(cleaned_response)
+        data = self._llm_call_with_retry(
+            prompt,
+            expected_keys=['skills'],
+            operation_name="skills tailoring"
+        )
+
+        if data:
             return data.get('skills', current_skills)
-        except (yaml.YAMLError, AttributeError) as e:
-            logger.warning(f"Failed to parse tailored skills: {e}")
+        else:
+            logger.warning("Failed to tailor skills after retries, using original")
             return current_skills
 
     def generate_tailored_resume(
