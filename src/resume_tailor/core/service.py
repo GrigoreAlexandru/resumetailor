@@ -239,7 +239,7 @@ class ResumeService:
         tailored_skills: List[Dict[str, Any]],
         keywords: List[str]
     ) -> None:
-        """Print a summary of changes made to the resume.
+        """Print keywords that will be bolded in the resume.
 
         Args:
             job_details: Extracted company and role
@@ -252,80 +252,22 @@ class ResumeService:
             keywords: Extracted keywords for bolding
         """
         console.print("\n" + "="*80)
-        console.print("[bold cyan]📊 TAILORING SUMMARY[/bold cyan]", justify="center")
+        console.print("[bold cyan]📊 KEYWORDS TO BE EMPHASIZED[/bold cyan]", justify="center")
         console.print("="*80 + "\n")
-
-        # Job Details
-        if job_details:
-            console.print(Panel(
-                f"[bold]Company:[/bold] {job_details.get('company', 'N/A')}\n"
-                f"[bold]Role:[/bold] {job_details.get('role', 'N/A')}",
-                title="[bold]Target Position[/bold]",
-                border_style="cyan"
-            ))
-            console.print()
 
         # Keywords
         if keywords:
-            console.print(f"[bold]Keywords Extracted:[/bold] {len(keywords)} terms")
-            console.print(f"  {', '.join(keywords[:10])}" + (f", ... ({len(keywords)-10} more)" if len(keywords) > 10 else ""))
-            console.print()
+            console.print(f"[bold]Extracted {len(keywords)} keywords for automatic bolding:[/bold]\n")
 
-        # Summary Changes
-        if original_summary != tailored_summary:
-            console.print("[bold yellow]📝 SUMMARY CHANGES[/bold yellow]")
-            console.print(f"[dim]Original:[/dim]\n  {original_summary}\n")
-            console.print(f"[dim]Tailored:[/dim]\n  [green]{tailored_summary}[/green]\n")
+            # Display keywords in a nicely formatted way
+            keywords_display = []
+            for i, kw in enumerate(keywords, 1):
+                keywords_display.append(f"  {i}. {kw}")
+
+            console.print("\n".join(keywords_display))
+            console.print("\n[dim]These terms will be automatically emphasized throughout your resume.[/dim]")
         else:
-            console.print("[bold]📝 Summary:[/bold] No changes\n")
-
-        # Experience Changes
-        console.print("[bold yellow]💼 EXPERIENCE CHANGES[/bold yellow]")
-        for orig, tailored in zip(original_experience, tailored_experience):
-            company = orig.get('company', 'Unknown')
-            orig_highlights = orig.get('highlights', [])
-            tailored_highlights = tailored.get('highlights', [])
-
-            if orig_highlights != tailored_highlights:
-                console.print(f"\n[bold]{company}:[/bold]")
-                console.print(f"  [dim]Modified {len(tailored_highlights)} highlight(s)[/dim]")
-
-                # Show first changed highlight as example
-                for i, (o, t) in enumerate(zip(orig_highlights, tailored_highlights)):
-                    if o != t:
-                        console.print(f"  [dim]Example (Highlight {i+1}):[/dim]")
-                        console.print(f"    [red]- {o[:80]}...[/red]" if len(o) > 80 else f"    [red]- {o}[/red]")
-                        console.print(f"    [green]+ {t[:80]}...[/green]" if len(t) > 80 else f"    [green]+ {t}[/green]")
-                        break
-            else:
-                console.print(f"\n[bold]{company}:[/bold] No changes")
-        console.print()
-
-        # Skills Changes
-        console.print("[bold yellow]🛠️  SKILLS CHANGES[/bold yellow]")
-
-        # Check if order changed
-        orig_labels = [s.get('label') for s in original_skills]
-        tailored_labels = [s.get('label') for s in tailored_skills]
-
-        if orig_labels != tailored_labels:
-            console.print("  [dim]Category order changed:[/dim]")
-            console.print(f"    [red]Original: {' → '.join(orig_labels)}[/red]")
-            console.print(f"    [green]Tailored: {' → '.join(tailored_labels)}[/green]")
-        else:
-            console.print("  [dim]Category order: No changes[/dim]")
-
-        # Check if details within categories changed
-        details_changed = False
-        for orig, tailored in zip(original_skills, tailored_skills):
-            if orig.get('details') != tailored.get('details'):
-                details_changed = True
-                break
-
-        if details_changed:
-            console.print("  [dim]Skills within categories: Reordered[/dim]")
-        else:
-            console.print("  [dim]Skills within categories: No changes[/dim]")
+            console.print("[yellow]No keywords extracted.[/yellow]")
 
         console.print("\n" + "="*80 + "\n")
 
