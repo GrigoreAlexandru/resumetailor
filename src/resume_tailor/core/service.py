@@ -5,6 +5,8 @@ from typing import Optional, Dict, Any, List
 import re
 import yaml
 from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 from ..config.schemas import JobDescription, RendererConfig
 from ..llm.base import BaseLLMProvider
@@ -226,6 +228,107 @@ class ResumeService:
             logger.warning("Failed to tailor skills after retries, using original")
             return current_skills
 
+    def _print_changes_summary(
+        self,
+        job_details: Dict[str, str],
+        original_summary: str,
+        tailored_summary: str,
+        original_experience: List[Dict[str, Any]],
+        tailored_experience: List[Dict[str, Any]],
+        original_skills: List[Dict[str, Any]],
+        tailored_skills: List[Dict[str, Any]],
+        keywords: List[str]
+    ) -> None:
+        """Print a summary of changes made to the resume.
+
+        Args:
+            job_details: Extracted company and role
+            original_summary: Original summary text
+            tailored_summary: Tailored summary text
+            original_experience: Original experience entries
+            tailored_experience: Tailored experience entries
+            original_skills: Original skills categories
+            tailored_skills: Tailored skills categories
+            keywords: Extracted keywords for bolding
+        """
+        console.print("\n" + "="*80)
+        console.print("[bold cyan]📊 TAILORING SUMMARY[/bold cyan]", justify="center")
+        console.print("="*80 + "\n")
+
+        # Job Details
+        if job_details:
+            console.print(Panel(
+                f"[bold]Company:[/bold] {job_details.get('company', 'N/A')}\n"
+                f"[bold]Role:[/bold] {job_details.get('role', 'N/A')}",
+                title="[bold]Target Position[/bold]",
+                border_style="cyan"
+            ))
+            console.print()
+
+        # Keywords
+        if keywords:
+            console.print(f"[bold]Keywords Extracted:[/bold] {len(keywords)} terms")
+            console.print(f"  {', '.join(keywords[:10])}" + (f", ... ({len(keywords)-10} more)" if len(keywords) > 10 else ""))
+            console.print()
+
+        # Summary Changes
+        if original_summary != tailored_summary:
+            console.print("[bold yellow]📝 SUMMARY CHANGES[/bold yellow]")
+            console.print(f"[dim]Original:[/dim]\n  {original_summary}\n")
+            console.print(f"[dim]Tailored:[/dim]\n  [green]{tailored_summary}[/green]\n")
+        else:
+            console.print("[bold]📝 Summary:[/bold] No changes\n")
+
+        # Experience Changes
+        console.print("[bold yellow]💼 EXPERIENCE CHANGES[/bold yellow]")
+        for orig, tailored in zip(original_experience, tailored_experience):
+            company = orig.get('company', 'Unknown')
+            orig_highlights = orig.get('highlights', [])
+            tailored_highlights = tailored.get('highlights', [])
+
+            if orig_highlights != tailored_highlights:
+                console.print(f"\n[bold]{company}:[/bold]")
+                console.print(f"  [dim]Modified {len(tailored_highlights)} highlight(s)[/dim]")
+
+                # Show first changed highlight as example
+                for i, (o, t) in enumerate(zip(orig_highlights, tailored_highlights)):
+                    if o != t:
+                        console.print(f"  [dim]Example (Highlight {i+1}):[/dim]")
+                        console.print(f"    [red]- {o[:80]}...[/red]" if len(o) > 80 else f"    [red]- {o}[/red]")
+                        console.print(f"    [green]+ {t[:80]}...[/green]" if len(t) > 80 else f"    [green]+ {t}[/green]")
+                        break
+            else:
+                console.print(f"\n[bold]{company}:[/bold] No changes")
+        console.print()
+
+        # Skills Changes
+        console.print("[bold yellow]🛠️  SKILLS CHANGES[/bold yellow]")
+
+        # Check if order changed
+        orig_labels = [s.get('label') for s in original_skills]
+        tailored_labels = [s.get('label') for s in tailored_skills]
+
+        if orig_labels != tailored_labels:
+            console.print("  [dim]Category order changed:[/dim]")
+            console.print(f"    [red]Original: {' → '.join(orig_labels)}[/red]")
+            console.print(f"    [green]Tailored: {' → '.join(tailored_labels)}[/green]")
+        else:
+            console.print("  [dim]Category order: No changes[/dim]")
+
+        # Check if details within categories changed
+        details_changed = False
+        for orig, tailored in zip(original_skills, tailored_skills):
+            if orig.get('details') != tailored.get('details'):
+                details_changed = True
+                break
+
+        if details_changed:
+            console.print("  [dim]Skills within categories: Reordered[/dim]")
+        else:
+            console.print("  [dim]Skills within categories: No changes[/dim]")
+
+        console.print("\n" + "="*80 + "\n")
+
     def generate_tailored_resume(
         self,
         job_description: JobDescription,
@@ -242,23 +345,31 @@ class ResumeService:
         """
         console.print(f"\n[bold]Tailoring resume for: {job_description.role or 'position'}[/bold]\n")
 
+        # Extract job details for summary
+        job_details = self.extract_jd_details(job_description.text)
+
         # Load base sections
         static_sections = self.template_mgr.load_static_sections()
         base_resume = self.template_mgr.load_base_resume()
         current_dynamic = self.template_mgr.extract_dynamic_sections(base_resume)
 
+        # Store originals for comparison
+        original_summary = current_dynamic.get('summary', [''])[0]
+        original_experience = current_dynamic.get('experience', [])
+        original_skills = current_dynamic.get('skills', [])
+
         # Tailor dynamic sections
         tailored_summary = self._tailor_summary(
             job_description.text,
-            current_dynamic.get('summary', [''])[0]
+            original_summary
         )
         tailored_experience = self._tailor_experience(
             job_description.text,
-            current_dynamic.get('experience', [])
+            original_experience
         )
         tailored_skills = self._tailor_skills(
             job_description.text,
-            current_dynamic.get('skills', [])
+            original_skills
         )
 
         tailored_dynamic = {
@@ -285,5 +396,17 @@ class ResumeService:
         # Save
         self.template_mgr.save_yaml(complete_resume, output_path)
         console.print(f"\n[green]✓[/green] Tailored resume saved to: {output_path}")
+
+        # Print changes summary
+        self._print_changes_summary(
+            job_details=job_details,
+            original_summary=original_summary,
+            tailored_summary=tailored_summary,
+            original_experience=original_experience,
+            tailored_experience=tailored_experience,
+            original_skills=original_skills,
+            tailored_skills=tailored_skills,
+            keywords=bold_keywords
+        )
 
         return output_path
