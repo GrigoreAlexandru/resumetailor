@@ -53,14 +53,33 @@ Highlights:
 
 **Task:** Rewrite the highlights for this experience entry to best match the job description.
 
-**Instructions:**
-1.  **Do not remove any highlights.**
-2.  Rewrite the highlights to emphasize achievements relevant to the job description.
-3.  Use strong action verbs and quantify results.
-4.  Reorder the highlights to put the most relevant ones first.
-5.  Use plain text ONLY - do NOT use markdown bold syntax (**text**)
+**Golden Formula for Each Bullet:**
+[Action Verb] + [What You Did] + [Specific Technology/Tool] + [Quantified Impact]
 
-**CRITICAL:** Do NOT use **bold** markdown syntax in your output. The system will automatically bold key terms.
+Example: "Reduced API latency by 40% by implementing Redis caching in Python/Django, serving 1M+ daily users"
+
+**Instructions:**
+1.  **Do not remove any highlights** - rewrite all of them
+2.  **Reorder highlights** to put most relevant ones first (based on job description requirements)
+3.  **Preserve ALL metrics and numbers** from original (%, $, time, scale, users)
+4.  Use strong action verbs: Led, Architected, Reduced, Increased, Built, Scaled, Migrated, Optimized
+5.  Include specific technologies mentioned in both the highlight and job description
+6.  **Keep bullets concise** - 1-2 lines maximum
+7.  Use plain text ONLY - do NOT use markdown bold syntax (**text**)
+
+**CRITICAL - NEVER DO THESE:**
+- ❌ Do NOT add explanatory phrases like "demonstrating expertise in", "showcasing ability to", "highlighting skills in", "fostering growth", "ensuring quality"
+- ❌ Do NOT explain soft skills or add clarifying clauses - let achievements speak for themselves
+- ❌ Do NOT add content that wasn't in the original - only rewrite what exists
+- ❌ Do NOT add redundant bullets or filler content
+- ❌ Do NOT make bullets longer than 2 lines
+- ❌ Do NOT use vague terms like "contributed to" - be specific about what YOU did
+- ❌ The system will automatically bold key terms - do NOT use ** markers
+
+**SHOW, DON'T TELL:**
+- ✅ GOOD: "Mentored 4+ engineers on best practices for testing, code quality, and distributed system design"
+- ❌ BAD: "Mentored 4+ engineers, demonstrating strong communication and collaboration skills"
+- ❌ BAD: "Mentored 4+ engineers, fostering team growth and adherence to standards"
 
 **Output Format:**
 Return ONLY a YAML list of the tailored highlights with plain text (no ** markers):
@@ -136,16 +155,28 @@ def create_summary_prompt(job_description: str, current_summary: str) -> str:
 Current Summary:
 {current_summary}
 
-Task: Rewrite the professional summary to align with this job posting.
+Task: Rewrite the professional summary to align with this job posting while maintaining impact.
 
 Requirements:
-- 2-3 sentences maximum
-- Lead with years of experience and most relevant expertise
-- Mention 2-3 key technologies/skills from the job description
+- **MUST be 2-3 sentences** (not shorter!)
+- **Preserve ALL quantified achievements from the original** (percentages, numbers, metrics)
+- Lead with: [Title] with [X]+ years of experience in [specific domain]
+- Include 2-4 specific technologies from job description that match your background
+- Include 1-2 quantified achievements or key accomplishments from the original summary
+- Match job description keywords naturally
 - Use plain text ONLY - do NOT use markdown bold syntax (**text**)
-- Be concise and impactful
+- Write in third person or implied first person (avoid "has enabled me to", "I have")
 
-CRITICAL: Do NOT use **bold** markdown syntax in your output. The system will automatically bold key terms.
+CRITICAL RULES:
+- Do NOT shorten the summary - keep it substantial (2-3 sentences)
+- Do NOT lose metrics and numbers from the original
+- Do NOT add metrics that don't exist in the original
+- Do NOT use awkward phrases like "has enabled me to" or "I have achieved"
+- Do NOT use generic phrases like "extensive experience" - be specific
+- The system will automatically bold key terms - do NOT use ** markers
+
+Example Structure:
+"[Title] with [X]+ years of experience [doing what], specializing in [specific area]. Expert in [2-4 specific technologies from job description], with proven success in [quantified achievement from original] and [another quantified achievement from original]."
 
 Output Format:
 Return ONLY the following YAML structure with plain text (no ** markers):
