@@ -53,33 +53,41 @@ Highlights:
 
 **Task:** Rewrite the highlights for this experience entry to best match the job description.
 
-**Golden Formula for Each Bullet:**
+**Golden Formula for Each Bullet (First Person):**
 [Action Verb] + [What You Did] + [Specific Technology/Tool] + [Quantified Impact]
 
-Example: "Reduced API latency by 40% by implementing Redis caching in Python/Django, serving 1M+ daily users"
+Examples (First Person - No "I" Pronouns):
+- "Reduced API latency by 40% by implementing Redis caching in Python/Django, serving 1M+ daily users"
+- "Led migration of 20+ microservices to Kubernetes, reducing deployment time by 60%"
+- "Architected real-time data pipeline processing 10M+ events/day using Kafka and Flink"
 
 **Instructions:**
-1.  **Do not remove any highlights** - rewrite all of them
-2.  **Reorder highlights** to put most relevant ones first (based on job description requirements)
-3.  **Preserve ALL metrics and numbers** from original (%, $, time, scale, users)
-4.  Use strong action verbs: Led, Architected, Reduced, Increased, Built, Scaled, Migrated, Optimized
-5.  Include specific technologies mentioned in both the highlight and job description
-6.  **Keep bullets concise** - 1-2 lines maximum
-7.  Use plain text ONLY - do NOT use markdown bold syntax (**text**)
+1.  **Write in FIRST PERSON** (implied first person - use action verbs without "I", "me", "my")
+2.  **Do not remove any highlights** - rewrite all of them
+3.  **Reorder highlights** to put most relevant ones first (based on job description requirements)
+4.  **Preserve ALL metrics and numbers** from original (%, $, time, scale, users)
+5.  Use strong action verbs: Led, Architected, Reduced, Increased, Built, Scaled, Migrated, Optimized
+6.  Include specific technologies mentioned in both the highlight and job description
+7.  **Keep bullets concise** - 1-2 lines maximum
+8.  Use plain text ONLY - do NOT use markdown bold syntax (**text**)
 
 **CRITICAL - NEVER DO THESE:**
+- ❌ Do NOT use pronouns "I", "me", "my" - write in implied first person with action verbs
+- ❌ Do NOT use third person ("he/she", "the engineer", etc.)
 - ❌ Do NOT add explanatory phrases like "demonstrating expertise in", "showcasing ability to", "highlighting skills in", "fostering growth", "ensuring quality"
 - ❌ Do NOT explain soft skills or add clarifying clauses - let achievements speak for themselves
 - ❌ Do NOT add content that wasn't in the original - only rewrite what exists
 - ❌ Do NOT add redundant bullets or filler content
 - ❌ Do NOT make bullets longer than 2 lines
-- ❌ Do NOT use vague terms like "contributed to" - be specific about what YOU did
+- ❌ Do NOT use vague terms like "contributed to" - be specific with action verbs
 - ❌ The system will automatically bold key terms - do NOT use ** markers
 
-**SHOW, DON'T TELL:**
+**FIRST PERSON EXAMPLES:**
+- ✅ GOOD: "Led team of 5 engineers to deliver..." (implied first person)
 - ✅ GOOD: "Mentored 4+ engineers on best practices for testing, code quality, and distributed system design"
-- ❌ BAD: "Mentored 4+ engineers, demonstrating strong communication and collaboration skills"
-- ❌ BAD: "Mentored 4+ engineers, fostering team growth and adherence to standards"
+- ❌ BAD: "I mentored 4+ engineers..." (explicit pronoun - too informal)
+- ❌ BAD: "The engineer mentored 4+ engineers..." (third person)
+- ❌ BAD: "Mentored 4+ engineers, demonstrating strong communication skills" (explanatory fluff)
 
 **Output Format:**
 Return ONLY a YAML list of the tailored highlights with plain text (no ** markers):
@@ -160,23 +168,24 @@ Task: Rewrite the professional summary to align with this job posting while main
 Requirements:
 - **MUST be 2-3 sentences** (not shorter!)
 - **Preserve ALL quantified achievements from the original** (percentages, numbers, metrics)
+- **Write in FIRST PERSON** (implied first person - no "I" pronouns, just describe yourself directly)
 - Lead with: [Title] with [X]+ years of experience in [specific domain]
 - Include 2-4 specific technologies from job description that match your background
 - Include 1-2 quantified achievements or key accomplishments from the original summary
 - Match job description keywords naturally
 - Use plain text ONLY - do NOT use markdown bold syntax (**text**)
-- Write in third person or implied first person (avoid "has enabled me to", "I have")
 
 CRITICAL RULES:
 - Do NOT shorten the summary - keep it substantial (2-3 sentences)
 - Do NOT lose metrics and numbers from the original
 - Do NOT add metrics that don't exist in the original
-- Do NOT use awkward phrases like "has enabled me to" or "I have achieved"
+- Do NOT use pronouns like "I", "me", "my" - use implied first person (standard resume style)
+- Do NOT use third person phrases like "he/she has", "John is", etc.
 - Do NOT use generic phrases like "extensive experience" - be specific
 - The system will automatically bold key terms - do NOT use ** markers
 
-Example Structure:
-"[Title] with [X]+ years of experience [doing what], specializing in [specific area]. Expert in [2-4 specific technologies from job description], with proven success in [quantified achievement from original] and [another quantified achievement from original]."
+Example Structure (First Person):
+"Senior Backend Engineer with 5+ years of experience developing and deploying high-performance applications, specializing in microservices architecture. Expert in Python, Django, and PostgreSQL, with proven success in reducing API latency by 45% and improving system stability."
 
 Output Format:
 Return ONLY the following YAML structure with plain text (no ** markers):
