@@ -438,16 +438,16 @@ def info() -> None:
 
 @app.command()
 def render(
-    yaml_file: Path = typer.Argument(
-        ...,
-        help="Path to tailored resume YAML file (from external LLM)",
+    yaml_file: Optional[Path] = typer.Argument(
+        None,
+        help="Path to tailored resume YAML file (omit to read from stdin)",
         exists=True,
         dir_okay=False
     ),
     output: Optional[Path] = typer.Option(
         None,
         "--output", "-o",
-        help="Output directory for PDF (default: same as YAML file location)"
+        help="Output directory for PDF (default: ./output/rendered_resume)"
     ),
     static_sections: Optional[Path] = typer.Option(
         None,
@@ -461,19 +461,21 @@ def render(
     and renders it to PDF, merging it with your static sections.
 
     Example:
-        # Step 1: Get prompt
-        resume-tailor generate job.txt --prompt-only > prompt.txt
-
-        # Step 2: Copy prompt to ChatGPT/Claude, get YAML, save as tailored.yaml
-
-        # Step 3: Render the result
+        # From file
         resume-tailor render tailored.yaml
+
+        # From stdin (pipe from clipboard)
+        pbpaste | resume-tailor render -o output/
+
+        # From stdin (Windows)
+        Get-Clipboard | resume-tailor render -o output/
     """
     # Load static sections
     static_path = static_sections or settings.static_sections_path
 
     try:
         from ..core.template import TemplateManager
+        import sys
 
         template_mgr = TemplateManager(
             base_resume_path=settings.base_resume_path,  # Not used, but required
@@ -483,8 +485,54 @@ def render(
         static_sections_data = template_mgr.load_static_sections()
 
         # Load the tailored YAML from external LLM
-        with open(yaml_file, 'r') as f:
-            tailored_data = yaml.safe_load(f)
+        if yaml_file:
+            # Read from file
+            console.print(f"[cyan]Reading YAML from file:[/cyan] {yaml_file}")
+            with open(yaml_file, 'r') as f:
+                yaml_content = f.read()
+        else:
+            # Read from stdin
+            if sys.stdin.isatty():
+                console.print("[red]Error: No YAML file provided and no data in stdin[/red]")
+                console.print("[yellow]Usage:[/yellow]")
+                console.print("  resume-tailor render tailored.yaml")
+                console.print("  pbpaste | resume-tailor render -o output/")
+                raise typer.Exit(1)
+
+            console.print("[cyan]Reading YAML from stdin...[/cyan]")
+            yaml_content = sys.stdin.read()
+
+        # Validate and parse YAML
+        try:
+            tailored_data = yaml.safe_load(yaml_content)
+        except yaml.YAMLError as e:
+            console.print(f"[red]Error: Invalid YAML format[/red]")
+            console.print(f"[yellow]Details:[/yellow] {e}")
+            console.print("\n[dim]Make sure the external LLM output is valid YAML[/dim]")
+            raise typer.Exit(1)
+
+        # Validate required fields
+        if not isinstance(tailored_data, dict):
+            console.print("[red]Error: YAML must be a dictionary/object[/red]")
+            console.print("[yellow]Expected structure:[/yellow]")
+            console.print("  summary:")
+            console.print("    - \"Your summary\"")
+            console.print("  experience: [...]")
+            console.print("  skills: [...]")
+            raise typer.Exit(1)
+
+        required_fields = ['summary', 'experience', 'skills']
+        missing_fields = [field for field in required_fields if field not in tailored_data]
+
+        if missing_fields:
+            console.print(f"[red]Error: Missing required fields: {', '.join(missing_fields)}[/red]")
+            console.print("[yellow]YAML must include:[/yellow]")
+            console.print("  - summary: list of strings")
+            console.print("  - experience: list of job entries")
+            console.print("  - skills: list of skill categories")
+            raise typer.Exit(1)
+
+        console.print("[green]✓[/green] YAML validation passed")
 
         # Extract dynamic sections from external LLM result
         tailored_dynamic = {
@@ -496,8 +544,11 @@ def render(
         # Determine output directory
         if output:
             output_dir = output
-        else:
+        elif yaml_file:
             output_dir = yaml_file.parent / (yaml_file.stem + "_output")
+        else:
+            # Default for stdin
+            output_dir = settings.output_dir / "rendered_resume"
 
         output_dir.mkdir(parents=True, exist_ok=True)
 
