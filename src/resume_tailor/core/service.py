@@ -172,6 +172,113 @@ class ResumeService:
 
         return None
 
+    def create_external_llm_prompt(self, job_description: str) -> str:
+        """Create comprehensive prompt for external LLM (ChatGPT, Claude, etc.).
+
+        Args:
+            job_description: Job posting text
+
+        Returns:
+            Complete prompt with instructions and base resume data
+        """
+        # Load base sections
+        static_sections = self.template_mgr.load_static_sections()
+        base_resume = self.template_mgr.load_base_resume()
+        current_dynamic = self.template_mgr.extract_dynamic_sections(base_resume)
+
+        # Get current content
+        current_summary = current_dynamic.get('summary', [''])[0]
+        current_experience = current_dynamic.get('experience', [])
+        current_skills = current_dynamic.get('skills', [])
+
+        # Format as YAML for display
+        current_resume_yaml = yaml.dump({
+            'summary': [current_summary],
+            'experience': current_experience,
+            'skills': current_skills
+        }, default_flow_style=False, sort_keys=False)
+
+        # Create comprehensive prompt
+        prompt = f"""# RESUME TAILORING TASK
+
+You are an expert ATS-optimized resume writer. Tailor the resume below for the specific job description.
+
+---
+
+## JOB DESCRIPTION:
+
+{job_description}
+
+---
+
+## CURRENT RESUME (YAML):
+
+```yaml
+{current_resume_yaml}```
+
+---
+
+## INSTRUCTIONS:
+
+### 1. SUMMARY (2-3 sentences):
+- Write in FIRST PERSON (implied - no "I", "me", "my" pronouns)
+- Preserve ALL quantified achievements (percentages, numbers, metrics)
+- Include 2-4 specific technologies from job description
+- Example: "Senior Backend Engineer with 5+ years of experience developing high-performance applications..."
+
+### 2. EXPERIENCE HIGHLIGHTS:
+- Write in FIRST PERSON (implied - use action verbs without "I", "me", "my")
+- Golden Formula: [Action Verb] + [What] + [Technology] + [Impact]
+- Reorder highlights to put most relevant first
+- Preserve ALL metrics from original (%, $, time, users)
+- Strong action verbs: Led, Architected, Reduced, Increased, Built, Scaled
+- Keep concise (1-2 lines max per bullet)
+- NO explanatory phrases like "demonstrating expertise", "showcasing ability"
+- NO soft skill explanations - let achievements speak
+
+### 3. SKILLS:
+- Preserve ALL existing skill category labels EXACTLY
+- Reorder categories to put most relevant first
+- Within categories, reorder skills to prioritize relevant ones
+
+### 4. CRITICAL RULES:
+- Output ONLY valid YAML (no explanatory text before or after)
+- Use plain text ONLY - NO markdown bold syntax (**text**)
+- Do NOT remove any content - only rewrite and reorder
+- Do NOT add metrics that don't exist in original
+- Do NOT use pronouns "I", "me", "my"
+- Do NOT use third person ("he/she", "the engineer")
+
+---
+
+## OUTPUT FORMAT:
+
+Return ONLY this YAML structure (no other text):
+
+```yaml
+summary:
+  - "Your tailored summary in plain text"
+
+experience:
+  - company: "Company Name"
+    position: "Position"
+    start_date: "YYYY-MM"
+    end_date: "YYYY-MM"  # or omit if current
+    highlights:
+      - "Tailored highlight 1"
+      - "Tailored highlight 2"
+
+skills:
+  - label: "Original Label 1"
+    details: "Reordered skills, ..."
+  - label: "Original Label 2"
+    details: "Reordered skills, ..."
+```
+
+IMPORTANT: Output ONLY the YAML. No introduction, no explanation, no ```yaml markers - just pure YAML."""
+
+        return prompt
+
     def extract_jd_details(self, job_description: str) -> Dict[str, str]:
         """Extract company and role from job description."""
         console.print("[cyan]Extracting job details...[/cyan]")
