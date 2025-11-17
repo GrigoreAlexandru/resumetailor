@@ -157,9 +157,9 @@ def generate(
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Generate tailored resume
+    # Generate tailored resume (pass details to avoid duplicate API call)
     yaml_output = output_dir / "tailored_resume.yaml"
-    service.generate_tailored_resume(jd, yaml_output)
+    service.generate_tailored_resume(jd, yaml_output, job_details=details)
 
     # Render if requested
     if render:

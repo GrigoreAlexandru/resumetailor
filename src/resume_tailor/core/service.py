@@ -1,7 +1,7 @@
 """Core resume tailoring service."""
 import logging
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Set
 import re
 import yaml
 from rich.console import Console
@@ -14,8 +14,6 @@ from ..llm.prompts import (
     create_summary_prompt,
     create_highlights_tailoring_prompt,
     create_skills_tailoring_prompt,
-    extract_keywords_prompt,
-    extract_resume_keywords_prompt,
     extract_jd_details_prompt
 )
 from .template import TemplateManager
@@ -52,6 +50,55 @@ class ResumeService:
             content = match.group(2)
 
         return content.strip()
+
+    @staticmethod
+    def _extract_technical_terms(resume_data: Dict[str, Any]) -> List[str]:
+        """Extract technical terms from resume content programmatically.
+
+        Args:
+            resume_data: Complete resume data dict
+
+        Returns:
+            List of unique technical terms found in resume
+        """
+        # Common technical terms patterns - single words or common 2-word phrases
+        technical_patterns = [
+            # Languages
+            r'\b(Python|JavaScript|TypeScript|Java|C\+\+|Go|Golang|PHP|Ruby|Swift|Kotlin|Rust|Scala|'
+            r'Perl|R|MATLAB|SQL|HTML|CSS|Bash|Shell|PowerShell)\b',
+            # Frameworks & Libraries
+            r'\b(React|Angular|Vue\.js|Next\.js|Django|Flask|FastAPI|Express|Node\.js|Spring|'
+            r'Symfony|Laravel|Rails|ASP\.NET|jQuery|Bootstrap|Tailwind)\b',
+            # Databases
+            r'\b(PostgreSQL|MySQL|MongoDB|Redis|Elasticsearch|Cassandra|DynamoDB|SQLite|'
+            r'Oracle|MariaDB|Neo4j|Kafka)\b',
+            # Cloud & DevOps
+            r'\b(AWS|Azure|GCP|Docker|Kubernetes|Jenkins|GitLab CI|GitHub Actions|CircleCI|'
+            r'Terraform|Ansible|Chef|Puppet|Vagrant)\b',
+            # Tools & Platforms
+            r'\b(Git|GitHub|GitLab|Jira|Confluence|Slack|VS Code|IntelliJ|Eclipse|'
+            r'Postman|Swagger|Grafana|Prometheus|Datadog)\b',
+            # Methodologies & Concepts
+            r'\b(Agile|Scrum|Kanban|DevOps|CI/CD|TDD|BDD|DDD|Microservices|REST|'
+            r'GraphQL|gRPC|OOP|MVC|SOLID|API)\b',
+        ]
+
+        resume_text = yaml.dump(resume_data, default_flow_style=False)
+
+        found_terms: Dict[str, str] = {}  # lowercase -> preferred casing
+        for pattern in technical_patterns:
+            matches = re.finditer(pattern, resume_text, re.IGNORECASE)
+            for match in matches:
+                term = match.group(0)
+                term_lower = term.lower()
+                # Preserve first occurrence's casing (usually the correct one)
+                if term_lower not in found_terms:
+                    found_terms[term_lower] = term
+
+        # Sort for consistent output
+        return sorted(list(found_terms.values()), key=str.lower)
+
+
 
     @staticmethod
     def _validate_yaml_structure(data: Any, expected_keys: List[str]) -> bool:
@@ -144,62 +191,6 @@ class ResumeService:
         else:
             logger.warning("Failed to extract job details after retries")
             return {}
-
-    def extract_keywords(self, job_description: str) -> List[str]:
-        """Extract key terms from job description.
-
-        Args:
-            job_description: Job posting text
-
-        Returns:
-            List of keywords
-        """
-        console.print("[cyan]Extracting keywords from job description...[/cyan]")
-
-        prompt = extract_keywords_prompt(job_description)
-        data = self._llm_call_with_retry(
-            prompt,
-            expected_keys=['keywords'],
-            operation_name="keyword extraction"
-        )
-
-        if data:
-            keywords = data.get('keywords', [])
-            console.print(f"[green]✓[/green] Extracted {len(keywords)} keywords from job description")
-            return keywords
-        else:
-            logger.warning("Failed to extract keywords after retries")
-            return []
-
-    def extract_resume_keywords(self, tailored_dynamic: Dict[str, Any], job_description: str) -> List[str]:
-        """Extract job-relevant technical terms from tailored resume content.
-
-        Args:
-            tailored_dynamic: Tailored dynamic sections (summary, experience, skills)
-            job_description: Job posting text for relevance filtering
-
-        Returns:
-            List of job-relevant technical keywords found in resume
-        """
-        console.print("[cyan]Extracting job-relevant terms from resume...[/cyan]")
-
-        # Convert tailored content to YAML string for analysis
-        resume_yaml = yaml.dump(tailored_dynamic, default_flow_style=False, sort_keys=False)
-
-        prompt = extract_resume_keywords_prompt(resume_yaml, job_description)
-        data = self._llm_call_with_retry(
-            prompt,
-            expected_keys=['keywords'],
-            operation_name="resume keyword extraction"
-        )
-
-        if data:
-            keywords = data.get('keywords', [])
-            console.print(f"[green]✓[/green] Extracted {len(keywords)} relevant terms from resume")
-            return keywords
-        else:
-            logger.warning("Failed to extract resume keywords after retries")
-            return []
 
     def _tailor_summary(self, job_description: str, current_summary: str) -> str:
         """Tailor the professional summary."""
@@ -307,20 +298,23 @@ class ResumeService:
         self,
         job_description: JobDescription,
         output_path: Path,
+        job_details: Optional[Dict[str, str]] = None,
     ) -> Path:
         """Complete workflow: tailor resume for job description.
 
         Args:
             job_description: Job to tailor for
             output_path: Where to save tailored YAML
+            job_details: Optional pre-extracted job details to avoid duplicate API call
 
         Returns:
             Path to saved YAML
         """
         console.print(f"\n[bold]Tailoring resume for: {job_description.role or 'position'}[/bold]\n")
 
-        # Extract job details for summary
-        job_details = self.extract_jd_details(job_description.text)
+        # Use provided job_details if available (avoids duplicate API call)
+        if job_details is None:
+            job_details = self.extract_jd_details(job_description.text)
 
         # Load base sections
         static_sections = self.template_mgr.load_static_sections()
@@ -352,33 +346,27 @@ class ResumeService:
             "experience": tailored_experience,
         }
 
-        # Extract keywords from both job description and resume
-        jd_keywords = self.extract_keywords(job_description.text)
-        resume_keywords = self.extract_resume_keywords(tailored_dynamic, job_description.text)
-
-        # Combine and deduplicate keywords (case-insensitive)
-        all_keywords = []
-        seen_lower = set()
-        for keyword in jd_keywords + resume_keywords:
-            keyword_lower = keyword.lower()
-            if keyword_lower not in seen_lower:
-                all_keywords.append(keyword)
-                seen_lower.add(keyword_lower)
-
-        bold_keywords = all_keywords
-        console.print(f"[green]✓[/green] Total relevant keywords for emphasis: {len(bold_keywords)}")
-
         # Extract design from base_resume if present
         base_design = base_resume.get('design')
 
-        # Merge everything
+        # Merge everything (without keywords first)
         complete_resume = self.template_mgr.merge_sections(
             static_sections=static_sections,
             dynamic_sections=tailored_dynamic,
-            bold_keywords=bold_keywords,
+            bold_keywords=[],  # Will add after
             renderer_config=self.renderer_config,
             base_design=base_design
         )
+
+        # Extract technical terms from final resume programmatically (no API call!)
+        console.print("[cyan]Extracting technical terms from resume...[/cyan]")
+        bold_keywords = self._extract_technical_terms(complete_resume)
+        console.print(f"[green]✓[/green] Extracted {len(bold_keywords)} technical terms")
+
+        # Add keywords to resume
+        if 'rendercv_settings' not in complete_resume:
+            complete_resume['rendercv_settings'] = {}
+        complete_resume['rendercv_settings']['bold_keywords'] = bold_keywords
 
         # Save
         self.template_mgr.save_yaml(complete_resume, output_path)
