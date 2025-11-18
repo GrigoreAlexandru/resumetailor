@@ -60,3 +60,6 @@ dmypy.json
 
 # RenderCV
 *.log
+
+# AI assistance files
+CLAUDE.md
